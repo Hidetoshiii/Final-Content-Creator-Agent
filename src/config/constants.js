@@ -6,11 +6,11 @@
 // ─── Modelos de Claude ────────────────────────────────────────────────────
 export const CLAUDE_MODELS = {
   /** Análisis de noticias — rápido y económico */
-  CURATOR:  'claude-3-haiku-20240307',
+  CURATOR:  'claude-haiku-4-5',
   /** Redacción de posts — máxima calidad */
-  WRITER:   'claude-3-5-sonnet-20241022',
+  WRITER:   'claude-sonnet-4-5',
   /** Análisis de engagement — equilibrio calidad/costo */
-  ANALYZER: 'claude-3-5-sonnet-20241022',
+  ANALYZER: 'claude-sonnet-4-5',
 }
 
 // ─── Límites de tokens por llamada ───────────────────────────────────────
