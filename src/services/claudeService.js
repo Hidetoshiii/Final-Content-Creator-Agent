@@ -3,7 +3,7 @@
  *
  * Implementa las 3 llamadas del pipeline:
  *   1. analyzeNews   → Agente 1 (Haiku)  — Curador de noticias
- *   2. generatePost  → Agente 2 (Sonnet) — Redactor de posts
+ *   2. generatePost  → Agente 2 (Sonnet) — Redactor de posts (con Web Search)
  *   3. analyzeAndImprove → Agente 3 (Sonnet) — Analizador de engagement
  *
  * Diseño:
@@ -50,7 +50,7 @@ export const CLAUDE_ERROR_TYPES = {
   UNKNOWN:           'UNKNOWN',
 }
 
-// ─── Helper interno ───────────────────────────────────────────────────────────
+// ─── Helpers internos ────────────────────────────────────────────────────────
 
 /**
  * Crea un cliente Anthropic con la API key del usuario.
@@ -58,18 +58,66 @@ export const CLAUDE_ERROR_TYPES = {
  * Las keys se guardan en localStorage y nunca se exponen en código fuente.
  *
  * @param {string} apiKey
+ * @param {Record<string, string>} [extraHeaders]
  * @returns {Anthropic}
  */
-function createClient(apiKey) {
+function createClient(apiKey, extraHeaders = {}) {
   return new Anthropic({
     apiKey,
     dangerouslyAllowBrowser: true,
+    defaultHeaders: extraHeaders,
   })
 }
 
 /**
- * Hace la llamada a la API y parsea el JSON de la respuesta.
- * Mapea los errores de la SDK a tipos propios para manejo granular.
+ * Mapea los errores de red / SDK a ClaudeServiceError tipados.
+ * Reutilizado por ambos helpers de llamada.
+ *
+ * @param {unknown} err
+ * @param {string} rawText
+ */
+function mapError(err, rawText) {
+  if (err instanceof ClaudeParseError) {
+    throw new ClaudeServiceError(
+      CLAUDE_ERROR_TYPES.JSON_PARSE_FAILED,
+      'La respuesta de Claude no pudo interpretarse como JSON.',
+      { rawResponse: err.rawResponse ?? rawText },
+    )
+  }
+  if (err?.status === 401) {
+    throw new ClaudeServiceError(
+      CLAUDE_ERROR_TYPES.INVALID_API_KEY,
+      'La API key de Anthropic no es válida. Verifica tu configuración.',
+    )
+  }
+  if (err?.status === 429) {
+    throw new ClaudeServiceError(
+      CLAUDE_ERROR_TYPES.RATE_LIMIT,
+      'Límite de solicitudes alcanzado. Espera unos segundos e intenta nuevamente.',
+    )
+  }
+  if (err?.status === 400 && err?.error?.type === 'invalid_request_error') {
+    throw new ClaudeServiceError(
+      CLAUDE_ERROR_TYPES.CONTENT_FILTERED,
+      'El contenido fue rechazado por los filtros de seguridad de Claude.',
+      { error: err.error },
+    )
+  }
+  if (err instanceof TypeError && err.message.includes('fetch')) {
+    throw new ClaudeServiceError(
+      CLAUDE_ERROR_TYPES.NETWORK_ERROR,
+      'Sin conexión a internet. Verifica tu red e intenta nuevamente.',
+    )
+  }
+  throw new ClaudeServiceError(
+    CLAUDE_ERROR_TYPES.UNKNOWN,
+    err?.message ?? 'Error desconocido al llamar a la API de Claude.',
+    { originalError: err },
+  )
+}
+
+/**
+ * Hace la llamada estándar a la API y parsea el JSON de la respuesta.
  *
  * @param {{ systemPrompt: string, userMessage: string, model: string, maxTokens: number, apiKey: string }} params
  * @returns {Promise<object>}
@@ -88,51 +136,51 @@ async function callClaude({ systemPrompt, userMessage, model, maxTokens, apiKey 
     })
 
     rawText = message.content[0]?.text ?? ''
+    return parseClaudeResponse(rawText)
+
+  } catch (err) {
+    mapError(err, rawText)
+  }
+}
+
+/**
+ * Igual que callClaude pero habilita la herramienta nativa de Web Search de
+ * Anthropic (beta: web-search-2025-03-05).
+ *
+ * Anthropic ejecuta las búsquedas en sus servidores — el cliente no necesita
+ * resolver el ciclo tool_use manualmente. La respuesta puede incluir bloques
+ * tool_use (búsquedas realizadas) y bloques text (respuesta final con JSON).
+ * Solo se pasan los bloques text al parser para no romper la extracción de JSON.
+ *
+ * @param {{ systemPrompt: string, userMessage: string, model: string, maxTokens: number, apiKey: string }} params
+ * @returns {Promise<object>}
+ * @throws {ClaudeServiceError}
+ */
+async function callClaudeWithWebSearch({ systemPrompt, userMessage, model, maxTokens, apiKey }) {
+  let rawText = ''
+
+  try {
+    const client = createClient(apiKey, {
+      'anthropic-beta': 'web-search-2025-03-05',
+    })
+
+    const message = await client.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system:     systemPrompt,
+      messages:   [{ role: 'user', content: userMessage }],
+      tools:      [{ type: 'web_search_20250305', name: 'web_search' }],
+    })
+
+    // Filtrar solo bloques de texto — descartar bloques tool_use intermedios
+    // para no romper el parser JSON con contenido de búsqueda
+    const textBlocks = message.content.filter(block => block.type === 'text')
+    rawText = textBlocks.map(block => block.text).join('')
 
     return parseClaudeResponse(rawText)
 
   } catch (err) {
-    // Error de parsing — la llamada fue exitosa pero el JSON es inválido
-    if (err instanceof ClaudeParseError) {
-      throw new ClaudeServiceError(
-        CLAUDE_ERROR_TYPES.JSON_PARSE_FAILED,
-        'La respuesta de Claude no pudo interpretarse como JSON.',
-        { rawResponse: err.rawResponse },
-      )
-    }
-
-    // Errores de la SDK de Anthropic
-    if (err?.status === 401) {
-      throw new ClaudeServiceError(
-        CLAUDE_ERROR_TYPES.INVALID_API_KEY,
-        'La API key de Anthropic no es válida. Verifica tu configuración.',
-      )
-    }
-    if (err?.status === 429) {
-      throw new ClaudeServiceError(
-        CLAUDE_ERROR_TYPES.RATE_LIMIT,
-        'Límite de solicitudes alcanzado. Espera unos segundos e intenta nuevamente.',
-      )
-    }
-    if (err?.status === 400 && err?.error?.type === 'invalid_request_error') {
-      throw new ClaudeServiceError(
-        CLAUDE_ERROR_TYPES.CONTENT_FILTERED,
-        'El contenido fue rechazado por los filtros de seguridad de Claude.',
-        { error: err.error },
-      )
-    }
-    if (err instanceof TypeError && err.message.includes('fetch')) {
-      throw new ClaudeServiceError(
-        CLAUDE_ERROR_TYPES.NETWORK_ERROR,
-        'Sin conexión a internet. Verifica tu red e intenta nuevamente.',
-      )
-    }
-
-    throw new ClaudeServiceError(
-      CLAUDE_ERROR_TYPES.UNKNOWN,
-      err?.message ?? 'Error desconocido al llamar a la API de Claude.',
-      { originalError: err },
-    )
+    mapError(err, rawText)
   }
 }
 
@@ -169,6 +217,9 @@ export async function analyzeNews({ rawArticles, currentDate, recentHistory }, a
 
 /**
  * generatePost — Redacta un post completo a partir de la noticia seleccionada.
+ * Usa la herramienta nativa de Web Search de Anthropic para enriquecer el post
+ * con contexto de mercado, reacciones de analistas y datos complementarios
+ * en tiempo real antes de redactar.
  *
  * @param {{
  *   newsItem: object,
@@ -195,7 +246,7 @@ export async function generatePost({ newsItem, format, lengthTier, recentHistory
     historial_reciente: recentHistory.slice(0, HISTORY_CONTEXT_LIMIT),
   })
 
-  return callClaude({
+  return callClaudeWithWebSearch({
     systemPrompt: AGENT_2_WRITER_PROMPT,
     userMessage,
     model:        CLAUDE_MODELS.WRITER,

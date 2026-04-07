@@ -73,6 +73,20 @@ function NewsCard({ news, selected, onSelect }) {
         </div>
       )}
 
+      {news.url && (
+        <div className="pt-1">
+          <a
+            href={news.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()} // Esto evita que se seleccione la tarjeta al darle clic al link
+            className="inline-block text-xs font-medium text-oxford-light hover:text-smoke transition-colors underline underline-offset-2"
+          >
+            Leer noticia original ↗
+          </a>
+        </div>
+      )}
+
       {/* Indicador de selección */}
       {selected && (
         <div className="flex items-center gap-1.5 pt-1">

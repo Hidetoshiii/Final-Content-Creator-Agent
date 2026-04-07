@@ -16,7 +16,7 @@ export const CLAUDE_MODELS = {
 // ─── Límites de tokens por llamada ───────────────────────────────────────
 export const MAX_TOKENS = {
   CURATOR:  4000,
-  WRITER:   3000,
+  WRITER:   5000,
   ANALYZER: 4000,
 }
 

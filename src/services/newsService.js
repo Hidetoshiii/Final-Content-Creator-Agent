@@ -55,8 +55,8 @@ async function fetchFromNewsData(apiKey) {
         country:   'pe',
         language:  'es',
         category:  'business',
-        timeframe: 48,
-        size:      50,
+        //timeframe: 48,
+        size:      10,
       },
       timeout: 12000,
     })
@@ -78,8 +78,8 @@ async function fetchFromNewsData(apiKey) {
         language:  'es',
         category:  'business',
         q:         'economía OR finanzas OR inversión OR mercados OR banco',
-        timeframe: 48,
-        size:      20,
+        //timeframe: 48,
+        size:      10,
       },
       timeout: 12000,
     })
@@ -123,7 +123,7 @@ export async function fetchNews(newsDataKey) {
   }
 
   // Mezcla aleatoria + límite de 50 artículos para darle al Agente 1 un pool amplio
-  const shuffled = articles.sort(() => Math.random() - 0.5).slice(0, 50)
+  const shuffled = articles.sort(() => Math.random() - 0.5).slice(0, 20)
   console.info(`[newsService] Total para Agente 1: ${shuffled.length} artículos`)
   return shuffled
 }
