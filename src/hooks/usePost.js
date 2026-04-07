@@ -39,8 +39,8 @@ function usePost() {
 
     // flushSync: garantiza que la pantalla de carga se renderice antes del await
     flushSync(() => {
-      store.setGeneratingPost(true)
       store.setGenerateError(null)
+      store.setGeneratingPost(true)
     })
 
     try {
@@ -80,8 +80,8 @@ function usePost() {
 
     // flushSync: garantiza que la pantalla de carga se renderice antes del await
     flushSync(() => {
-      store.setAnalyzing(true)
       store.setAnalyzeError(null)
+      store.setAnalyzing(true)
     })
 
     try {

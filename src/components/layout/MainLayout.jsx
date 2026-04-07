@@ -15,7 +15,7 @@ import NotificationStack  from '@/components/ui/NotificationStack'
  */
 function MainLayout() {
   return (
-    <div className="flex w-full min-h-screen bg-gunmetal">
+    <div className="flex w-full min-h-screen" style={{ backgroundColor: '#F1F5F9' }}>
       <Sidebar />
 
       {/* Contenido principal — scroll independiente del sidebar */}

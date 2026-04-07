@@ -47,13 +47,10 @@ function LoadingScreen({ title, phases = [], estimatedSeconds, className = '' })
       className,
     ].join(' ')}>
 
-      {/* Spinner triple (CSS puro, sin dependencias) */}
+      {/* Spinner triple */}
       <div className="relative w-16 h-16">
-        {/* Aro exterior */}
-        <span className="absolute inset-0 rounded-full border-4 border-oxford-light/20" />
-        {/* Aro animado */}
+        <span className="absolute inset-0 rounded-full border-4 border-oxford-light/15" />
         <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-oxford-light animate-spin" />
-        {/* Punto central */}
         <span className="absolute inset-0 flex items-center justify-center">
           <span className="w-2 h-2 rounded-full bg-oxford-light animate-pulse" />
         </span>
@@ -64,7 +61,7 @@ function LoadingScreen({ title, phases = [], estimatedSeconds, className = '' })
         <h3 className="text-base font-bold text-smoke">{title}</h3>
         {estimatedSeconds && (
           <p className="text-xs text-smoke-muted">
-            Tiempo estimado: {estimatedSeconds} segundos aproximadamente
+            Tiempo estimado: ~{estimatedSeconds} segundos
           </p>
         )}
       </div>
@@ -72,25 +69,23 @@ function LoadingScreen({ title, phases = [], estimatedSeconds, className = '' })
       {/* Fase actual */}
       {phases.length > 0 && (
         <div className="min-h-[2.5rem] flex items-center">
-          <p className="text-sm text-oxford-light font-medium animate-fade-in" key={phaseIndex}>
+          <p className="text-sm text-oxford-light font-semibold animate-fade-in" key={phaseIndex}>
             {currentPhase}{dots}
           </p>
         </div>
       )}
 
-      {/* Barra de progreso indeterminada */}
-      <div className="w-64 h-1 bg-oxford-light/15 rounded-full overflow-hidden">
+      {/* Barra de progreso */}
+      <div className="w-64 h-1.5 bg-oxford-light/10 rounded-full overflow-hidden">
         <div
           className="h-full bg-oxford-light rounded-full"
-          style={{
-            animation: 'loading-bar 2s ease-in-out infinite',
-          }}
+          style={{ animation: 'loading-bar 2s ease-in-out infinite' }}
         />
       </div>
 
-      {/* Nota de paciencia */}
+      {/* Nota */}
       <p className="text-xs text-smoke-muted max-w-xs leading-relaxed">
-        La IA está trabajando. No cierres ni recarges la página.
+        La IA está trabajando. No cierres ni recargues la página.
       </p>
 
       {/* Keyframe inline para la barra (no rompe Tailwind) */}

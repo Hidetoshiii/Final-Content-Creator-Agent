@@ -1,35 +1,28 @@
 /**
- * Badge — Etiqueta visual para categorías, estados y metadata.
- *
- * Variantes predefinidas alineadas con los datos de los agentes:
- *   origin    → 'peru' | 'internacional'
- *   priority  → 'alta' | 'media'
- *   format    → 'informativo' | 'educativo' | 'polemico'
- *   status    → 'ok' | 'warning' | 'fail'
- *   custom    → cualquier color vía className
+ * Badge — Etiqueta visual rediseñada para tema claro.
  */
 
 const PRESETS = {
   // Origen geográfico
-  peru:           'bg-oxford/60 text-smoke border border-oxford-light/40',
-  internacional:  'bg-gunmetal text-smoke-muted border border-smoke/10',
+  peru:           'bg-oxford-light/10 text-oxford-light border border-oxford-light/25',
+  internacional:  'bg-neutral text-smoke-muted border border-oxford-light/15',
 
   // Prioridad editorial
-  alta:           'bg-success/15 text-success border border-success/30',
-  media:          'bg-warning/15 text-warning border border-warning/30',
+  alta:           'bg-success/10 text-success border border-success/25',
+  media:          'bg-warning/10 text-warning border border-warning/25',
 
   // Formatos de post
-  informativo:    'bg-oxford/60 text-smoke border border-oxford-light/40',
-  educativo:      'bg-success/15 text-success border border-success/30',
-  polemico:       'bg-danger/15 text-danger border border-danger/30',
+  informativo:    'bg-oxford-light/10 text-oxford-light border border-oxford-light/25',
+  educativo:      'bg-success/10 text-success border border-success/25',
+  polemico:       'bg-danger/10 text-danger border border-danger/25',
 
   // Estados del analizador
-  ok:             'bg-success/15 text-success border border-success/30',
-  warning:        'bg-warning/15 text-warning border border-warning/30',
-  fail:           'bg-danger/15 text-danger border border-danger/30',
+  ok:             'bg-success/10 text-success border border-success/25',
+  warning:        'bg-warning/10 text-warning border border-warning/25',
+  fail:           'bg-danger/10 text-danger border border-danger/25',
 
   // Genérico
-  default:        'bg-oxford/40 text-smoke-muted border border-smoke/10',
+  default:        'bg-neutral text-smoke-muted border border-oxford-light/15',
 }
 
 const LABEL_MAP = {
@@ -45,14 +38,6 @@ const LABEL_MAP = {
   fail:          '✗',
 }
 
-/**
- * @param {{
- *   preset?: keyof PRESETS,
- *   label?: string,
- *   size?: 'sm' | 'md',
- *   className?: string
- * }} props
- */
 function Badge({ preset = 'default', label, size = 'sm', className = '' }) {
   const displayLabel = label ?? LABEL_MAP[preset] ?? preset
 

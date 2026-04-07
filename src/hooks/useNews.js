@@ -50,8 +50,8 @@ function useNews() {
   const fetchAndAnalyzeNews = useCallback(async () => {
     // ── Forzar render del estado de carga ANTES de cualquier await ──────────
     flushSync(() => {
-      setLoadingNews(true)
       setNewsError(null)
+      setLoadingNews(true)
     })
 
     try {

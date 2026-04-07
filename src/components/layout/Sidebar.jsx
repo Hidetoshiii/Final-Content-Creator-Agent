@@ -1,29 +1,30 @@
 import { NavLink } from 'react-router-dom'
 
-/**
- * NAV_ITEMS — Ítems de navegación del sidebar.
- * Centralizado aquí para facilitar cambios futuros.
- */
 const NAV_ITEMS = [
-  { to: '/',               label: 'Inicio',           icon: '🏠' },
-  { to: '/banco-noticias', label: 'Banco de Noticias', icon: '📰' },
-  { to: '/historial',      label: 'Historial',         icon: '📋' },
-  { to: '/configuracion',  label: 'Configuración',     icon: '⚙️'  },
+  { to: '/',               label: 'Inicio',            icon: '🏠' },
+  { to: '/banco-noticias', label: 'Banco de Noticias',  icon: '📰' },
+  { to: '/historial',      label: 'Historial',          icon: '📋' },
+  { to: '/configuracion',  label: 'Configuración',      icon: '⚙️'  },
 ]
 
 /**
- * Sidebar — Navegación lateral fija de la app.
- * Usa NavLink de React Router para marcar el ítem activo.
+ * Sidebar — Navegación lateral fija.
+ * Usa colores FINLAT dark hardcodeados para mantener la identidad de marca
+ * independientemente del tema del área de contenido.
  */
 function Sidebar() {
   return (
-    <aside className="w-60 min-h-screen bg-oxford flex flex-col shrink-0">
-
-      {/* Logo */}
-      <div className="px-6 py-6 border-b border-oxford-light/30">
-        <span className="text-smoke font-extrabold text-lg tracking-wide leading-tight">
-          FINLAT<br />
-          <span className="text-smoke-muted font-medium text-sm">Content Studio</span>
+    <aside
+      className="w-60 min-h-screen flex flex-col shrink-0"
+      style={{ backgroundColor: '#101c26' }}
+    >
+      {/* Logo FINLAT */}
+      <div className="px-6 py-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <span className="font-extrabold text-lg tracking-wide leading-tight block" style={{ color: '#FFFFFF' }}>
+          FINLAT
+        </span>
+        <span className="font-medium text-sm block mt-0.5" style={{ color: '#9baab8' }}>
+          Content Studio
         </span>
       </div>
 
@@ -34,14 +35,31 @@ function Sidebar() {
             key={to}
             to={to}
             end={to === '/'}
-            className={({ isActive }) =>
-              [
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150',
-                isActive
-                  ? 'bg-gunmetal text-smoke'
-                  : 'text-smoke-muted hover:bg-gunmetal/50 hover:text-smoke',
-              ].join(' ')
-            }
+            style={({ isActive }) => ({
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '10px 12px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              textDecoration: 'none',
+              transition: 'background 150ms, color 150ms',
+              backgroundColor: isActive ? '#224469' : 'transparent',
+              color: isActive ? '#FFFFFF' : '#9baab8',
+            })}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.getAttribute('aria-current')) {
+                e.currentTarget.style.backgroundColor = 'rgba(34,68,105,0.35)'
+                e.currentTarget.style.color = '#FFFFFF'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!e.currentTarget.getAttribute('aria-current')) {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = '#9baab8'
+              }
+            }}
           >
             <span aria-hidden="true">{icon}</span>
             {label}
@@ -49,11 +67,10 @@ function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer del sidebar */}
-      <div className="px-6 py-4 border-t border-oxford-light/30">
-        <p className="text-xs text-smoke-muted">FINLAT CAPITAL © 2026</p>
+      {/* Footer */}
+      <div className="px-6 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <p className="text-xs" style={{ color: '#9baab8' }}>FINLAT CAPITAL © 2026</p>
       </div>
-
     </aside>
   )
 }

@@ -1,10 +1,6 @@
 /**
- * Card — Contenedor base de la app.
- *
- * Props:
- *   selected  → borde resaltado en Oxford Light (cuando una card está seleccionada)
- *   hoverable → cursor pointer + efecto hover
- *   padding   → controla el padding interno ('none' | 'sm' | 'md' | 'lg')
+ * Card — Contenedor base para tema claro.
+ * Fondo blanco, borde sutil, sombra ligera.
  */
 
 const PADDING = {
@@ -14,16 +10,6 @@ const PADDING = {
   lg:   'p-6',
 }
 
-/**
- * @param {{
- *   selected?: boolean,
- *   hoverable?: boolean,
- *   padding?: 'none' | 'sm' | 'md' | 'lg',
- *   onClick?: () => void,
- *   className?: string,
- *   children: React.ReactNode
- * }} props
- */
 function Card({
   selected  = false,
   hoverable = false,
@@ -41,12 +27,14 @@ function Card({
       className={[
         'rounded-card bg-oxford border transition-all duration-150',
         selected
-          ? 'border-smoke/60 shadow-glow'
-          : 'border-oxford-light/20',
+          ? 'border-oxford-light shadow-glow'
+          : 'border-black/8 shadow-card',
         hoverable && !selected
-          ? 'hover:border-oxford-light/50 hover:bg-oxford-light/30 cursor-pointer'
+          ? 'hover:border-oxford-light/50 hover:shadow-card-lg cursor-pointer'
           : '',
-        onClick ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-oxford-light' : '',
+        onClick
+          ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-oxford-light'
+          : '',
         PADDING[padding] ?? PADDING.md,
         className,
       ].filter(Boolean).join(' ')}
