@@ -4,6 +4,7 @@
 
 import { useState }   from 'react'
 import useNews        from '@/hooks/useNews'
+import useAppStore    from '@/stores/appStore'
 import NewsCard       from '@/components/news/NewsCard'
 import Button         from '@/components/ui/Button'
 import LoadingScreen  from '@/components/ui/LoadingScreen'
@@ -38,10 +39,23 @@ function Step1Discover({ onNewsSelected }) {
     selectNews,
   } = useNews()
 
+  const { hasValidApiKeys } = useAppStore()
   const [showManual, setShowManual] = useState(false)
 
   const handleContinue = () => {
     if (selectedNewsId) onNewsSelected()
+  }
+
+  // ── Guard: falta API key de Anthropic ──────────────────────────────────────
+  if (!hasValidApiKeys()) {
+    return (
+      <EmptyState
+        icon="⚙️"
+        title="Falta la API key de Anthropic"
+        description='Ve a Configuración y pega tu API key (empieza con "sk-ant-"). La key de NewsAPI es opcional.'
+        action={{ label: 'Ir a Configuración', onClick: () => window.location.href = '/configuracion' }}
+      />
+    )
   }
 
   // ── Pantalla de carga ──────────────────────────────────────────────────────
@@ -76,22 +90,33 @@ function Step1Discover({ onNewsSelected }) {
     <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-smoke">Buscar noticias del día</h2>
           <p className="text-sm text-smoke-muted mt-0.5">
             La IA analiza las noticias financieras más recientes y selecciona las 3 más relevantes para FINLAT.
           </p>
         </div>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={fetchAndAnalyzeNews}
-          className="shrink-0"
-        >
-          {topNews.length > 0 ? '↺ Actualizar' : 'Buscar Noticias'}
-        </Button>
-        <Button variant="secondary" size="md" onClick={() => setShowManual(v => !v)} className="shrink-0">{showManual ? '← Volver' : 'Ingresar manualmente'}</Button>
+        
+        {/* Contenedor de botones: en mobile ocupan el 100% y se apilan */}
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+          <Button
+            variant="primary"
+            size="md"
+            onClick={fetchAndAnalyzeNews}
+            className="w-full sm:w-auto"
+          >
+            {topNews.length > 0 ? '↺ Actualizar' : 'Buscar Noticias'}
+          </Button>
+          <Button 
+            variant="secondary" 
+            size="md" 
+            onClick={() => setShowManual(v => !v)} 
+            className="w-full sm:w-auto"
+          >
+            {showManual ? '← Volver' : 'Ingresar manualmente'}
+          </Button>
+        </div>
       </div>
 
       {/* Aviso ventana ampliada */}

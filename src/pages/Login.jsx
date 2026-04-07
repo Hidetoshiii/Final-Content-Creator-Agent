@@ -36,7 +36,7 @@ function Login() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
+      className="min-h-screen w-full flex items-center justify-center px-4 sm:px-6"
       style={{ backgroundColor: '#F1F5F9' }}
     >
       <div className="w-full max-w-sm">
@@ -62,7 +62,7 @@ function Login() {
           className="bg-white rounded-2xl shadow-card p-8 space-y-5"
           style={{ border: '1px solid rgba(0,0,0,0.08)' }}
         >
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full" noValidate>
 
             {/* Email */}
             <div className="space-y-1.5">
