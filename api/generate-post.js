@@ -51,12 +51,15 @@ export default async function handler(req, res) {
       tools:      [{ type: 'web_search_20250305', name: 'web_search' }],
     })
 
-    // Filtrar solo bloques text — los bloques tool_use son las búsquedas intermedias
+// Filtrar solo bloques text — los bloques tool_use son las búsquedas intermedias
     const textBlocks = message.content.filter(b => b.type === 'text')
-    const rawText    = textBlocks.map(b => b.text).join('')
+    let rawText      = textBlocks.map(b => b.text).join('')
+    
+    // 💡 LIMPIEZA: Elimina las etiquetas <cite> y </cite> inyectadas automáticamente por Anthropic, dejando el texto intacto
+    rawText = rawText.replace(/<\/?cite[^>]*>/g, '')
+
     const result     = parseClaudeResponse(rawText)
     return res.status(200).json(result)
-
   } catch (err) {
     if (err?.status === 401) return res.status(401).json({ error: 'API key inválida' })
     if (err?.status === 429) return res.status(429).json({ error: 'Rate limit alcanzado' })
