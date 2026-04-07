@@ -1,19 +1,7 @@
 /**
  * newsService.js — Obtiene noticias financieras via la API Route /api/fetch-news.
- *
- * La API key de NewsData.io está en el servidor (Vercel env vars).
- *
- * El servidor siempre devuelve 200:
- *   - Con artículos → flujo normal
- *   - Con [] → sin key o NewsData.io no disponible → modo manual en la UI
  */
 
-/**
- * fetchNews — Solicita artículos crudos al servidor.
- *
- * @returns {Promise<{ articles: object[], manualMode: boolean }>}
- * @throws {Error} Solo si hay un error de red real (sin conexión)
- */
 export async function fetchNews() {
   let res
 
@@ -23,8 +11,10 @@ export async function fetchNews() {
     throw new Error('Sin conexión. Verifica tu red e intenta nuevamente.')
   }
 
+  // 💡 Si falla, ahora sí extraemos el error exacto que nos envía el backend
   if (!res.ok) {
-    throw new Error('Error del servidor al obtener noticias. Intenta nuevamente.')
+    const errData = await res.json().catch(() => ({}))
+    throw new Error(errData.error || 'Error del servidor al obtener noticias.')
   }
 
   const articles   = await res.json()
