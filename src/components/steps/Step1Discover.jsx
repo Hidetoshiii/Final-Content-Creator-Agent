@@ -38,7 +38,11 @@ function Step1Discover({ onNewsSelected }) {
     selectNews,
   } = useNews()
 
+  // Si el servidor señaliza modo manual (key no configurada o NewsData.io caído)
+  // el formulario manual se abre automáticamente
+  const isManualMode = newsError === '__manual_mode__'
   const [showManual, setShowManual] = useState(false)
+  const showManualForm = showManual || isManualMode
 
   const handleContinue = () => {
     if (selectedNewsId) onNewsSelected()
@@ -115,16 +119,31 @@ function Step1Discover({ onNewsSelected }) {
         </div>
       )}
 
-      {/* Error */}
-      {newsError && (
+      {/* Error real (no modo manual) */}
+      {newsError && !isManualMode && (
         <ErrorBanner
           message={newsError}
           onRetry={fetchAndAnalyzeNews}
         />
       )}
 
+      {/* Aviso modo manual automático */}
+      {isManualMode && (
+        <div className="flex items-start gap-3 px-4 py-3 rounded-lg bg-warning/10 border border-warning/30">
+          <span className="text-warning text-base shrink-0">⚠</span>
+          <div>
+            <p className="text-sm font-medium text-smoke">Búsqueda automática no disponible</p>
+            <p className="text-xs text-smoke-muted mt-0.5">
+              El servicio de noticias no está configurado. Ingresa la noticia manualmente para continuar.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Entrada manual */}
-      {showManual && <ManualNewsInput onSubmit={analyzeManualArticle} isLoading={isLoadingNews} />}
+      {showManualForm && (
+        <ManualNewsInput onSubmit={analyzeManualArticle} isLoading={isLoadingNews} />
+      )}
 
       {/* Noticias */}
       {topNews.length > 0 && (
@@ -149,7 +168,7 @@ function Step1Discover({ onNewsSelected }) {
         </>
       )}
 
-      {/* Estado vacío */}
+      {/* Estado vacío inicial */}
       {topNews.length === 0 && !newsError && (
         <EmptyState
           icon="📰"

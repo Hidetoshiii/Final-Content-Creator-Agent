@@ -55,12 +55,9 @@ function useNews() {
       const { articles: rawArticles, manualMode } = await fetchNews()
 
       // Sin artículos (key no configurada o NewsData.io no disponible)
-      // → activar modo manual automáticamente sin bloquear al usuario
+      // → señalizar al store para que la UI abra el formulario manual
       if (manualMode) {
-        addNotification({
-          type:    'warning',
-          message: 'Noticias automáticas no disponibles. Usa "Ingresar manualmente".',
-        })
+        setNewsError('__manual_mode__')
         return
       }
 
